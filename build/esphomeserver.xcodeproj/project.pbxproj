@@ -1,0 +1,306 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F50FFEC630283AF700DF502C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFEC530283AF700DF502C /* main.cpp */; };
+		F50FFECC3028877300DF502C /* ESPHomeServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFECB3028877100DF502C /* ESPHomeServer.cpp */; };
+		F50FFECF302891FB00DF502C /* ESPHomeAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFECD302890D200DF502C /* ESPHomeAPI.cpp */; };
+		F50FFED230299FDA00DF502C /* ESPHomeMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFED130299FD900DF502C /* ESPHomeMessage.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F50FFEB730283A6300DF502C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		F50FFEB930283A6300DF502C /* ESPHomeServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ESPHomeServer; sourceTree = BUILT_PRODUCTS_DIR; };
+		F50FFEC530283AF700DF502C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		F50FFEC730285B4400DF502C /* ESPHomeAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ESPHomeAPI.h; sourceTree = "<group>"; };
+		F50FFECA302886DB00DF502C /* ESPHomeServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ESPHomeServer.h; sourceTree = "<group>"; };
+		F50FFECB3028877100DF502C /* ESPHomeServer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ESPHomeServer.cpp; sourceTree = "<group>"; };
+		F50FFECD302890D200DF502C /* ESPHomeAPI.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; path = ESPHomeAPI.cpp; sourceTree = "<group>"; };
+		F50FFED030299FCB00DF502C /* ESPHomeMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ESPHomeMessage.h; sourceTree = "<group>"; };
+		F50FFED130299FD900DF502C /* ESPHomeMessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ESPHomeMessage.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F50FFEB630283A6300DF502C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F50FFEB030283A6300DF502C = {
+			isa = PBXGroup;
+			children = (
+				F50FFEC430283AD900DF502C /* ESPHomeServer */,
+				F50FFEBA30283A6300DF502C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F50FFEBA30283A6300DF502C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F50FFEB930283A6300DF502C /* ESPHomeServer */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F50FFEC430283AD900DF502C /* ESPHomeServer */ = {
+			isa = PBXGroup;
+			children = (
+				F50FFECD302890D200DF502C /* ESPHomeAPI.cpp */,
+				F50FFEC730285B4400DF502C /* ESPHomeAPI.h */,
+				F50FFED130299FD900DF502C /* ESPHomeMessage.cpp */,
+				F50FFED030299FCB00DF502C /* ESPHomeMessage.h */,
+				F50FFECB3028877100DF502C /* ESPHomeServer.cpp */,
+				F50FFECA302886DB00DF502C /* ESPHomeServer.h */,
+				F50FFEC530283AF700DF502C /* main.cpp */,
+			);
+			name = ESPHomeServer;
+			path = ..;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F50FFEB830283A6300DF502C /* ESPHomeServer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F50FFEC030283A6300DF502C /* Build configuration list for PBXNativeTarget "ESPHomeServer" */;
+			buildPhases = (
+				F50FFEB530283A6300DF502C /* Sources */,
+				F50FFEB630283A6300DF502C /* Frameworks */,
+				F50FFEB730283A6300DF502C /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ESPHomeServer;
+			packageProductDependencies = (
+			);
+			productName = esphomeserver;
+			productReference = F50FFEB930283A6300DF502C /* ESPHomeServer */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F50FFEB130283A6300DF502C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+					F50FFEB830283A6300DF502C = {
+						CreatedOnToolsVersion = 26.4;
+					};
+				};
+			};
+			buildConfigurationList = F50FFEB430283A6300DF502C /* Build configuration list for PBXProject "ESPHomeServer" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F50FFEB030283A6300DF502C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F50FFEBA30283A6300DF502C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F50FFEB830283A6300DF502C /* ESPHomeServer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F50FFEB530283A6300DF502C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F50FFECC3028877300DF502C /* ESPHomeServer.cpp in Sources */,
+				F50FFED230299FDA00DF502C /* ESPHomeMessage.cpp in Sources */,
+				F50FFECF302891FB00DF502C /* ESPHomeAPI.cpp in Sources */,
+				F50FFEC630283AF700DF502C /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F50FFEBE30283A6300DF502C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F50FFEBF30283A6300DF502C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F50FFEC130283A6300DF502C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F50FFEC230283A6300DF502C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F50FFEB430283A6300DF502C /* Build configuration list for PBXProject "ESPHomeServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F50FFEBE30283A6300DF502C /* Debug */,
+				F50FFEBF30283A6300DF502C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F50FFEC030283A6300DF502C /* Build configuration list for PBXNativeTarget "ESPHomeServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F50FFEC130283A6300DF502C /* Debug */,
+				F50FFEC230283A6300DF502C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F50FFEB130283A6300DF502C /* Project object */;
+}
