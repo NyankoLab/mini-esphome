@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include <stdio.h>
+#include <stdint.h>
 
-#include "ESPHomeAPI.h"
 #include "ESPHomeMessage.h"
 
 namespace ESPHome {
@@ -97,33 +97,33 @@ void EncoderBase128(char*& buffer, int value)
 
 bool DecodeProtobuf(const char* buffer, const char* end, int type, Callback callback, int fd, void* data)
 {
-    uint32_t high = 0;
+    uint32_t upper = 0;
     uint32_t value = 0;
     while (buffer < end) {
         int tag = DecodeBase128(buffer);
         int id = (tag >> 3);
         int wire = (tag & 0x07);
-        high = 0;
+        upper = 0;
         value = 0;
         switch (wire) {
         case VARINT:
         case LEN:
             value = DecodeBase128(buffer);
             if (wire == LEN) {
-                callback(fd, data, type, id, value, 0, buffer);
+                callback(fd, data, type, id, 0, 0, std::string_view(buffer, buffer + value));
                 buffer += value;
             }
             else {
-                callback(fd, data, type, id, value, 0, nullptr);
+                callback(fd, data, type, id, value, 0, std::string_view());
             }
             break;
         case I64:
         case I32:
             value = Read32LE(buffer);
             if (wire == I64) {
-                high = Read32LE(buffer);
+                upper = Read32LE(buffer);
             }
-            callback(fd, data, type, id, value, high, nullptr);
+            callback(fd, data, type, id, value, upper, std::string_view());
             break;
         default:
             return false;
@@ -134,13 +134,13 @@ bool DecodeProtobuf(const char* buffer, const char* end, int type, Callback call
 
 void EncodeProtobuf(char*& buffer, va_list va)
 {
-    uint32_t high = 0;
+    uint32_t upper = 0;
     uint32_t value = 0;
     bool end = false;
     while (end == false) {
         int tag = va_arg(va, int);
         int wire = (tag & 0x07);
-        high = 0;
+        upper = 0;
         value = 0;
         EncoderBase128(buffer, tag);
         switch (wire) {
@@ -158,7 +158,7 @@ void EncodeProtobuf(char*& buffer, va_list va)
         case I32:
             Write32LE(buffer, value = va_arg(va, int));
             if (wire == I64) {
-                Write32LE(buffer, high = va_arg(va, int));
+                Write32LE(buffer, upper = va_arg(va, int));
             }
             break;
         default:
@@ -178,7 +178,7 @@ int DecodeMessage(const char* buffer, Callback callback, int fd, void* data)
 
     if (callback) {
         if (DecodeProtobuf(start + offset, start + size, type, callback, fd, data)) {
-            callback(fd, data, type, -1, 0, 0, nullptr);
+            callback(fd, data, type, -1, 0, 0, std::string_view());
         }
     }
     return size;
