@@ -4,9 +4,12 @@
 namespace ESPHome {
 namespace Server {
 
-bool Start();
-void Stop();
-void Poll();
+extern void Broadcast(int type, ...);
+extern void Dispatch(int type, int fd, const void* data);
+
+extern bool Start(void(*callback)(int type, int fd, const void* data) = Dispatch);
+extern void Stop();
+extern void Poll();
 
 };
 };

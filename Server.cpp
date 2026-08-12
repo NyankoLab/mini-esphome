@@ -14,15 +14,64 @@
 namespace ESPHome {
 namespace Server {
 
-static bool stop = false;
+static bool stop = true;
 static int server_fd = -1;
 static int pollfds_count = 0;
 static constexpr int pollfds_capacity = 4;
 static struct pollfd pollfds[pollfds_capacity];
 
-bool Start()
+void Broadcast(int type, ...)
 {
-    stop = false;
+    for (int i = 0; i < pollfds_count; ++i) {
+        auto& pollfd = pollfds[i];
+        if (pollfd.fd == server_fd)
+            continue;
+        va_list va;
+        va_start(va, type);
+        ESPHome::SendV(pollfd.fd, type, va);
+        va_end(va);
+    }
+}
+
+void Dispatch(int type, int fd, const void* data)
+{
+    switch (type) {
+    case ESPHome::ListEntitiesRequest::id:
+        ESPHome::Send(fd, ListEntitiesClimateResponse::id,
+                          Tag(1, LEN), Text("0"),
+                          Tag(2, I32), 0,
+                          Tag(3, LEN), Text("Climate"),
+                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_OFF,
+                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_COOL,
+                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_HEAT,
+                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_FAN_ONLY,
+                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_DRY,
+                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_AUTO,
+                          Tag(8, I32), ESPHome::CastInt(16.0f),
+                          Tag(9, I32), ESPHome::CastInt(32.0f),
+                          Tag(10, I32), ESPHome::CastInt(1.0f),
+                          Tag(21, I32), ESPHome::CastInt(1.0f),
+                          Tag());
+        ESPHome::Send(fd, ListEntitiesDoneResponse::id,
+                          Tag());
+        break;
+    case ESPHome::SubscribeStatesRequest::id:
+        ESPHome::Send(fd, ClimateStateResponse::id,
+                          Tag(1, I32), 0,
+                          Tag(2, VARINT), ESPHome::CLIMATE_MODE_OFF,
+                          Tag(3, I32), ESPHome::CastInt(28.0f),
+                          Tag(4, I32), ESPHome::CastInt(28.0f),
+                          Tag());
+        break;
+    default:
+        break;
+    }
+};
+
+bool Start(void(*dispatch)(int type, int fd, const void* data))
+{
+    if (stop == false)
+        return false;
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     switch (0) default: {
         if (fd < 0) {
@@ -43,10 +92,12 @@ bool Start()
             printf("%s : %s (%d)\n", "listen", strerror(errno), errno);
             break;
         }
+        stop = false;
         server_fd = fd;
         printf("%s : %d is listen\n", TAG, fd);
         fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
-        pollfds[pollfds_count++] = { fd, POLLSTANDARD };
+        pollfds[pollfds_count++] = { fd, POLLSTANDARD & ~POLLOUT };
+        ESPHome::Dispatch = dispatch;
         return true;
     }
     if (fd >= 0) {
@@ -57,6 +108,7 @@ bool Start()
 
 void Stop()
 {
+    ESPHome::Dispatch = [](int, int, const void*){};
     stop = true;
     server_fd = -1;
     for (int i = 0; i < pollfds_count; ++i)
@@ -91,7 +143,7 @@ void Poll()
                         }
                         printf("%s : %d is accept\n", TAG, fd);
                         fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
-                        pollfds[pollfds_count++] = { fd, POLLSTANDARD };
+                        pollfds[pollfds_count++] = { fd, POLLSTANDARD & ~POLLOUT };
                         break;
                     }
                     continue;
@@ -128,8 +180,7 @@ void Poll()
                             }
                             free(buffer);
                         }
-                    }
-                    else {
+                    } else {
                         ESPHome::Recv(pollfd.fd, header, count);
                         revents &= ~POLLHUP;
                     }

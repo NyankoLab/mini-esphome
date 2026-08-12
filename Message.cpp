@@ -112,8 +112,7 @@ bool DecodeProtobuf(const char* buffer, const char* end, int type, Callback call
             if (wire == LEN) {
                 callback(fd, data, type, id, 0, 0, std::string_view(buffer, buffer + value));
                 buffer += value;
-            }
-            else {
+            } else {
                 callback(fd, data, type, id, value, 0, std::string_view());
             }
             break;
@@ -179,6 +178,8 @@ int DecodeMessage(const char* buffer, Callback callback, int fd, void* data)
     if (callback) {
         if (DecodeProtobuf(start + offset, start + size, type, callback, fd, data)) {
             callback(fd, data, type, -1, 0, 0, std::string_view());
+        } else {
+            callback(fd, data, type, -2, 0, 0, std::string_view());
         }
     }
     return size;

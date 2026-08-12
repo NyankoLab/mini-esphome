@@ -19,6 +19,10 @@ inline float CastFloat(int integer) {
     return *(float*)&integer;
 }
 
+inline int CastInt(float number) {
+    return *(int*)&number;
+}
+
 inline int Tag(int field = 0, int wire = 7) {
     return (field << 3) | wire;
 }

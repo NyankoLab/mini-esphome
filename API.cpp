@@ -6,9 +6,11 @@
 #include "Message.h"
 #include "Setup.h"
 
-#define HAVE_DUMP_BINARY    1
-#define HAVE_DUMP_STRUCT    1
-#define HAVE_SOURCE_SERVER  1
+#define HAVE_DUMP_BINARY            1
+#define HAVE_DUMP_SEND_MESSAGE      1
+#define HAVE_DUMP_STRUCT            1
+#define HAVE_DUMP_UNKNOWN_MESSAGE   1
+#define HAVE_SOURCE_SERVER          1
 
 namespace ESPHome {
 
@@ -41,7 +43,7 @@ static void DumpType(char const* format,
 {
 #if HAVE_DUMP_STRUCT
     if constexpr(requires(T t) { t->size(); t->data(); }) {
-        printf("%s%s %s = \"%.*s\"\n", tab, type, name, (int)value->size(), value->data());
+        printf("%s%s %s = \"%.*s\"\n", tab, type, name, (int)value->size(), (const char*)value->data());
         return;
     }
     printf(format, tab, type, name, value, padding);
@@ -61,30 +63,49 @@ static void Message(int fd, void* data, int type, int id, int integer, int upper
     auto callback = (type < ESPHOME_API_COUNT) ? API[type] : nullptr;
     if (callback) {
         callback(fd, data, type, id, integer, upper, string);
+        if (id == -1) {
+            Dispatch(type, fd, data);
+        }
         return;
     }
+#if HAVE_DUMP_UNKNOWN_MESSAGE
     if (id == -1) {
         printf("[%d:%d] : END\n", type, id);
-    }
-    else if (string.data()) {
+    } else if (string.data()) {
         printf("[%d:%d] : (%.*s)\n", type, id, (int)string.size(), string.data());
-    }
-    else {
+    } else {
         printf("[%d:%d] : %d\n", type, id, integer);
     }
+#endif
 }
 
-void Send(int fd, void* data, int type, ...)
+void(*Dispatch)(int type, int fd, const void* data) = [](int, int, const void*)
+{
+    
+};
+
+void Send(int fd, int type, ...)
+{
+    va_list va;
+    va_start(va, type);
+    SendV(fd, type, va);
+    va_end(va);
+}
+
+void SendV(int fd, int type, va_list va)
 {
     char* buffer = (char*)malloc(ESPHOME_BUFFER_SIZE);
     if (buffer == nullptr)
         return;
-    va_list va;
-    va_start(va, type);
     int length = EncodeMessage(buffer, type, va);
-    va_end(va);
     DumpBinary(fd, buffer, length);
-    DecodeMessage(buffer, API[type], fd, data);
+#if HAVE_DUMP_SEND_MESSAGE
+    char* data = (char*)calloc(ESPHOME_BUFFER_SIZE, sizeof(char));
+    if (data) {
+        DecodeMessage(buffer, API[type], fd, data);
+        free(data);
+    }
+#endif
     send(fd, buffer, length, 0);
     free(buffer);
 }
@@ -92,8 +113,9 @@ void Send(int fd, void* data, int type, ...)
 void Recv(int fd, const char* buffer, int length)
 {
     DumpBinary(fd, buffer, length);
-
-    char* data = (char*)calloc(ESPHOME_BUFFER_SIZE, 1);
+    char* data = (char*)calloc(ESPHOME_BUFFER_SIZE, sizeof(char));
+    if (data == nullptr)
+        return;
     DecodeMessage(buffer, Message, fd, data);
     free(data);
 }
@@ -107,12 +129,13 @@ Callback const API[ESPHOME_API_COUNT] =
         case 2:     payload->api_version_major = integer;                           break;
         case 3:     payload->api_version_minor = integer;                           break;
         case -1:    DumpStruct(payload);
-                    Send(fd, data, HelloResponse::id,
-                                   Tag(1, VARINT), ESPHOME_API_VERSION_MAJOR,
-                                   Tag(2, VARINT), ESPHOME_API_VERSION_MINOR,
-                                   Tag(3, LEN), Text(ESPHOME_VERSION),
-                                   Tag(4, LEN), Text(Setup::Name),
-                                   Tag());
+                    Send(fd, HelloResponse::id,
+                             Tag(1, VARINT), ESPHOME_API_VERSION_MAJOR,
+                             Tag(2, VARINT), ESPHOME_API_VERSION_MINOR,
+                             Tag(3, LEN), Text(ESPHOME_VERSION),
+                             Tag(4, LEN), Text(Setup::Name),
+                             Tag());
+        case -2:    payload->~HelloRequest();
                     break;
         }
     },
@@ -124,7 +147,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 2:     payload->api_version_minor = integer;                           break;
         case 3:     payload->server_info = string;                                  break;
         case 4:     payload->name = string;                                         break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~HelloResponse();
+                    break;
         }
     },
 #endif
@@ -133,9 +158,10 @@ Callback const API[ESPHOME_API_COUNT] =
         switch (id) {
         case 1:     payload->password = string;                                     break;
         case -1:    DumpStruct(payload);
-                    Send(fd, data, AuthenticationResponse::id,
-                                   Tag(1, VARINT), false,
-                                   Tag());
+                    Send(fd, AuthenticationResponse::id,
+                             Tag(1, VARINT), false,
+                             Tag());
+        case -2:    payload->~AuthenticationRequest();
                     break;
         }
     },
@@ -144,7 +170,9 @@ Callback const API[ESPHOME_API_COUNT] =
         struct AuthenticationResponse* payload = (struct AuthenticationResponse*)data;
         switch (id) {
         case 1:     payload->invalid_password = integer;                            break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~AuthenticationResponse();
+                    break;
         }
     },
 #endif
@@ -153,8 +181,9 @@ Callback const API[ESPHOME_API_COUNT] =
         switch (id) {
         case 1:     payload->reason = DisconnectReason(integer);                    break;
         case -1:    DumpStruct(payload);
-                    Send(fd, data, DisconnectResponse::id,
-                                   Tag());
+                    Send(fd, DisconnectResponse::id,
+                             Tag());
+        case -2:    payload->~DisconnectRequest();
                     break;
         }
     },
@@ -167,8 +196,8 @@ Callback const API[ESPHOME_API_COUNT] =
     [PingRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct PingRequest* payload = (struct PingRequest*)data;
         DumpStruct(payload);
-        Send(fd, data, PingResponse::id,
-                       Tag());
+        Send(fd, PingResponse::id,
+                 Tag());
     },
 #if HAVE_SOURCE_SERVER
     [PingResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -179,16 +208,16 @@ Callback const API[ESPHOME_API_COUNT] =
     [DeviceInfoRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct DeviceInfoRequest* payload = (struct DeviceInfoRequest*)data;
         DumpStruct(payload);
-        Send(fd, data, DeviceInfoResponse::id,
-//                     Tag(1, VARINT), 0,
-                       Tag(2, LEN), Text(Setup::Name),
-                       Tag(3, LEN), Text(Setup::GetMacAddress()),
-                       Tag(4, LEN), Text(ESPHOME_VERSION),
-                       Tag(5, LEN), Text(__DATE__),
-                       Tag(6, LEN), Text(Setup::Model),
-                       Tag(12, LEN), Text(Setup::Manufacturer),
-                       Tag(13, LEN), Text(Setup::FriendlyName),
-                       Tag());
+        Send(fd, DeviceInfoResponse::id,
+//               Tag(1, VARINT), 0,
+                 Tag(2, LEN), Text(Setup::Name),
+                 Tag(3, LEN), Text(Setup::GetMacAddress()),
+                 Tag(4, LEN), Text(ESPHOME_VERSION),
+                 Tag(5, LEN), Text(__DATE__),
+                 Tag(6, LEN), Text(Setup::Model),
+                 Tag(12, LEN), Text(Setup::Manufacturer),
+                 Tag(13, LEN), Text(Setup::FriendlyName),
+                 Tag());
     },
 #if HAVE_SOURCE_SERVER
     [DeviceInfoResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -220,15 +249,15 @@ Callback const API[ESPHOME_API_COUNT] =
 //      case 24:    payload->zwave_home_id = integer;                               break;
 //      case 25:    payload->serial_proxies = integer;                              break;
 //      case 26:    payload->api_encryption_provisionable = integer;                break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~DeviceInfoResponse();
+                    break;
         }
     },
 #endif
     [ListEntitiesRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct ListEntitiesRequest* payload = (struct ListEntitiesRequest*)data;
         DumpStruct(payload);
-        Send(fd, data, ListEntitiesDoneResponse::id,
-                       Tag());
     },
 #if HAVE_SOURCE_SERVER
     [ListEntitiesDoneResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -258,7 +287,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 12:    payload->disabled_by_default = integer;                         break;
         case 13:    payload->entity_category = EntityCategory(integer);             break;
 //      case 14:    payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ListEntitiesSensorResponse();
+                    break;
         }
     },
     [SensorStateResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -268,7 +299,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 2:     payload->state = CastFloat(integer);                            break;
         case 3:     payload->missing_state = integer;                               break;
 //      case 4:     payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~SensorStateResponse();
+                    break;
         }
     },
     // ==================== SWITCH ====================
@@ -284,7 +317,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 8:     payload->entity_category = EntityCategory(integer);             break;
         case 9:     payload->device_class = string;                                 break;
 //      case 10:    payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ListEntitiesSwitchResponse();
+                    break;
         }
     },
     [SwitchStateResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -293,7 +328,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 1:     payload->key = integer;                                         break;
         case 2:     payload->state = integer;                                       break;
 //      case 3:     payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~SwitchStateResponse();
+                    break;
         }
     },
     [SwitchCommandRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -302,7 +339,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 1:     payload->key = integer;                                         break;
         case 2:     payload->state = integer;                                       break;
 //      case 3:     payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~SwitchCommandRequest();
+                    break;
         }
     },
     // ==================== TEXT SENSOR ====================
@@ -318,7 +357,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 7:     payload->entity_category = EntityCategory(integer);             break;
         case 8:     payload->device_class = string;                                 break;
 //      case 9:     payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ListEntitiesTextSensorResponse();
+                    break;
         }
     },
     [TextSensorStateResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -328,7 +369,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 2:     payload->state = string;                                        break;
         case 3:     payload->missing_state = integer;                               break;
 //      case 4:     payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~TextSensorStateResponse();
+                    break;
         }
     },
     // ==================== CLIMATE ====================
@@ -339,19 +382,19 @@ Callback const API[ESPHOME_API_COUNT] =
         case 2:     payload->key = integer;                                         break;
         case 3:     payload->name = string;                                         break;
 //      case 4:
-        case 5:     payload->supports_current_temperature = integer;                break;
-        case 6:     payload->supports_two_point_target_temperature = integer;       break;
-        case 7:     payload->supported_modes = ClimateMode(integer);                break;
+//      case 5:     payload->supports_current_temperature = integer;                break;
+//      case 6:     payload->supports_two_point_target_temperature = integer;       break;
+        case 7:     payload->supported_modes.push_back(ClimateMode(integer));       break;
         case 8:     payload->visual_min_temperature = CastFloat(integer);           break;
         case 9:     payload->visual_max_temperature = CastFloat(integer);           break;
         case 10:    payload->visual_target_temperature_step = CastFloat(integer);   break;
 //      case 11:    payload->legacy_supports_away = integer;                        break;
 //      case 12:    payload->supports_action = integer;                             break;
-        case 13:    payload->supported_fan_modes = ClimateFanMode(integer);         break;
-        case 14:    payload->supported_swing_modes = ClimateSwingMode(integer);     break;
-//      case 15:    payload->supported_custom_fan_modes;                            break;
-        case 16:    payload->supported_presets = ClimatePreset(integer);            break;
-//      case 17:    payload->supported_custom_presets;                              break;
+        case 13:    payload->supported_fan_modes.push_back(ClimateFanMode(integer));        break;
+        case 14:    payload->supported_swing_modes.push_back(ClimateSwingMode(integer));    break;
+//      case 15:    payload->supported_custom_fan_modes.push_back(string));         break;
+        case 16:    payload->supported_presets.push_back(ClimatePreset(integer));   break;
+//      case 17:    payload->supported_custom_presets.push_back(string));           break;
         case 18:    payload->disabled_by_default = integer;                         break;
         case 19:    payload->icon = string;                                         break;
         case 20:    payload->entity_category = EntityCategory(integer);             break;
@@ -363,7 +406,9 @@ Callback const API[ESPHOME_API_COUNT] =
 //      case 26:    payload->device_id = integer;                                   break;
         case 27:    payload->feature_flags = integer;                               break;
         case 28:    payload->temperature_unit = TemperatureUnit(integer);           break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ListEntitiesClimateResponse();
+                    break;
         }
     },
     [ClimateStateResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -385,7 +430,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 14:    payload->current_humidity = CastFloat(integer);                 break;
         case 15:    payload->target_humidity = CastFloat(integer);                  break;
 //      case 16:    payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ClimateStateResponse();
+                    break;
         }
     },
 #endif
@@ -416,7 +463,9 @@ Callback const API[ESPHOME_API_COUNT] =
         case 22:    payload->has_target_humidity = integer;                         break;
         case 23:    payload->target_humidity = CastFloat(integer);                  break;
 //      case 24:    payload->device_id = integer;                                   break;
-        case -1:    DumpStruct(payload);                                            break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ClimateCommandRequest();
+                    break;
         }
     },
 };

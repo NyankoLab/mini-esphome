@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <string_view>
+#include <vector>
 
 namespace ESPHome {
 
@@ -70,12 +71,12 @@ struct DeviceInfoResponse { static constexpr int id = 10;
 // 16 */std::string_view suggested_area;
 // 18 */std::string_view bluetooth_mac_address;
 // 19 */bool api_encryption_supported;
-// 20 */DeviceInfo devices;
-// 21 */AreaInfo areas;
+// 20 */std::vector<DeviceInfo> devices;
+// 21 */std::vector<AreaInfo> areas;
 // 22 */AreaInfo area;
 // 23 */uint32_t zwave_proxy_feature_flags;
 // 24 */uint32_t zwave_home_id;
-// 25 */SerialProxyInfo serial_proxies;
+// 25 */std::vector<SerialProxyInfo> serial_proxies;
 // 26 */bool api_encryption_provisionable;
 };
 
@@ -244,18 +245,18 @@ struct ListEntitiesClimateResponse { static constexpr int id = 46;
 /* 2  */uint32_t key;
 /* 3  */std::string_view name;
 // 4  */reserved
-/* 5  */bool supports_current_temperature;
-/* 6  */bool supports_two_point_target_temperature;
-/* 7  */ClimateMode supported_modes;
+// 5  */bool supports_current_temperature;
+// 6  */bool supports_two_point_target_temperature;
+/* 7  */std::vector<ClimateMode> supported_modes;
 /* 8  */float visual_min_temperature;
 /* 9  */float visual_max_temperature;
 /* 10 */float visual_target_temperature_step;
 // 11 */bool legacy_supports_away;
 // 12 */bool supports_action;
-/* 13 */ClimateFanMode supported_fan_modes;
-/* 14 */ClimateSwingMode supported_swing_modes;
+/* 13 */std::vector<ClimateFanMode> supported_fan_modes;
+/* 14 */std::vector<ClimateSwingMode> supported_swing_modes;
 // 15 */std::vector<std::string_view> supported_custom_fan_modes;
-/* 16 */ClimatePreset supported_presets;
+/* 16 */std::vector<ClimatePreset> supported_presets;
 // 17 */std::vector<std::string_view> supported_custom_presets;
 /* 18 */bool disabled_by_default;
 /* 19 */std::string_view icon;
@@ -339,7 +340,9 @@ struct ClimateCommandRequest { static constexpr int id = 48;
 // ==================== SERIAL PROXY ====================
 // ==================== BLUETOOTH CONNECTION PARAMS ====================
 
-void Send(int fd, void* data, int type, ...);
-void Recv(int fd, const char* buffer, int length);
+extern void(*Dispatch)(int fd, int type, const void* data);
+extern void Send(int fd, int type, ...);
+extern void SendV(int fd, int type, va_list va);
+extern void Recv(int fd, const char* buffer, int length);
 
 };
