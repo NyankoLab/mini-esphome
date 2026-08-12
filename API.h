@@ -342,7 +342,7 @@ struct ClimateCommandRequest { static constexpr int id = 48;
 
 extern void(*Dispatch)(int fd, int type, const void* data);
 extern void Send(int fd, int type, ...);
-extern void SendV(int fd, int type, va_list va);
+extern void Send(int fd, int type, va_list va);
 extern void Recv(int fd, const char* buffer, int length);
 
 };

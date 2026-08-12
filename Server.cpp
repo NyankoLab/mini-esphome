@@ -8,8 +8,12 @@
 #include "API.h"
 #include "Message.h"
 #include "Server.h"
+#include "Setup.h"
 
-#define TAG "ESPHome"
+#if defined(__ESP__)
+#include <freertos/task.h>
+#define ESPHOME_STACK_SIZE 3072
+#endif
 
 namespace ESPHome {
 namespace Server {
@@ -28,95 +32,16 @@ void Broadcast(int type, ...)
             continue;
         va_list va;
         va_start(va, type);
-        ESPHome::SendV(pollfd.fd, type, va);
+        ESPHome::Send(pollfd.fd, type, va);
         va_end(va);
     }
 }
 
 void Dispatch(int type, int fd, const void* data)
 {
-    switch (type) {
-    case ESPHome::ListEntitiesRequest::id:
-        ESPHome::Send(fd, ListEntitiesClimateResponse::id,
-                          Tag(1, LEN), Text("0"),
-                          Tag(2, I32), 0,
-                          Tag(3, LEN), Text("Climate"),
-                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_OFF,
-                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_COOL,
-                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_HEAT,
-                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_FAN_ONLY,
-                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_DRY,
-                          Tag(7, VARINT), ESPHome::CLIMATE_MODE_AUTO,
-                          Tag(8, I32), ESPHome::CastInt(16.0f),
-                          Tag(9, I32), ESPHome::CastInt(32.0f),
-                          Tag(10, I32), ESPHome::CastInt(1.0f),
-                          Tag(21, I32), ESPHome::CastInt(1.0f),
-                          Tag());
-        ESPHome::Send(fd, ListEntitiesDoneResponse::id,
-                          Tag());
-        break;
-    case ESPHome::SubscribeStatesRequest::id:
-        ESPHome::Send(fd, ClimateStateResponse::id,
-                          Tag(1, I32), 0,
-                          Tag(2, VARINT), ESPHome::CLIMATE_MODE_OFF,
-                          Tag(3, I32), ESPHome::CastInt(28.0f),
-                          Tag(4, I32), ESPHome::CastInt(28.0f),
-                          Tag());
-        break;
-    default:
-        break;
-    }
-};
-
-bool Start(void(*dispatch)(int type, int fd, const void* data))
-{
-    if (stop == false)
-        return false;
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    switch (0) default: {
-        if (fd < 0) {
-            printf("%s : %s (%d)\n", "socket", strerror(errno), errno);
-            break;
-        }
-        int value = 1;
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int));
-        struct sockaddr_in sockaddr = {};
-        sockaddr.sin_family = PF_INET;
-        sockaddr.sin_addr.s_addr = 0;
-        sockaddr.sin_port = htons(6053);
-        if (bind(fd, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in)) != 0) {
-            printf("%s : %s (%d)\n", "bind", strerror(errno), errno);
-            break;
-        }
-        if (listen(fd, 4) != 0) {
-            printf("%s : %s (%d)\n", "listen", strerror(errno), errno);
-            break;
-        }
-        stop = false;
-        server_fd = fd;
-        printf("%s : %d is listen\n", TAG, fd);
-        fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
-        pollfds[pollfds_count++] = { fd, POLLSTANDARD & ~POLLOUT };
-        ESPHome::Dispatch = dispatch;
-        return true;
-    }
-    if (fd >= 0) {
-        close(fd);
-    }
-    return false;
 }
 
-void Stop()
-{
-    ESPHome::Dispatch = [](int, int, const void*){};
-    stop = true;
-    server_fd = -1;
-    for (int i = 0; i < pollfds_count; ++i)
-        close(pollfds[i].fd);
-    pollfds_count = 0;
-}
-
-void Poll()
+void Poll(void* args)
 {
     while (stop == false && pollfds_count) {
         int count = poll(pollfds, pollfds_count, -1);
@@ -136,14 +61,14 @@ void Poll()
                     if (fd >= 0) {
                         if (pollfds_count >= pollfds_capacity) {
                             close(pollfds[1].fd);
-                            printf("%s : %d is close\n", TAG, pollfds[1].fd);
+                            printf("%d is close" ESPHOME_LF, pollfds[1].fd);
                             for (int i = 2; i < pollfds_count; ++i)
                                 pollfds[i - 1] = pollfds[i];
                             pollfds_count--;
                         }
-                        printf("%s : %d is accept\n", TAG, fd);
+                        printf("%d is accept" ESPHOME_LF, fd);
                         fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
-                        pollfds[pollfds_count++] = { fd, POLLSTANDARD & ~POLLOUT };
+                        pollfds[pollfds_count++] = { fd, POLLIN | POLLERR | POLLHUP | POLLNVAL };
                         break;
                     }
                     continue;
@@ -188,12 +113,63 @@ void Poll()
             }
             if (revents & (POLLERR | POLLHUP | POLLNVAL)) {
                 close(pollfd.fd);
-                printf("%s : %d is close\n", TAG, pollfd.fd);
+                printf("%d is close" ESPHOME_LF, pollfd.fd);
                 pollfds[i] = pollfds[--pollfds_count];
                 break;
             }
         }
     }
+}
+
+bool Start(void(*dispatch)(int type, int fd, const void* data))
+{
+    if (stop == false)
+        return false;
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    switch (0) default: {
+        if (fd < 0) {
+            printf("%s : %s (%d)" ESPHOME_LF, "socket", strerror(errno), errno);
+            break;
+        }
+        int value = 1;
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int));
+        struct sockaddr_in sockaddr = {};
+        sockaddr.sin_family = PF_INET;
+        sockaddr.sin_addr.s_addr = 0;
+        sockaddr.sin_port = htons(6053);
+        if (bind(fd, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in)) != 0) {
+            printf("%s : %s (%d)" ESPHOME_LF, "bind", strerror(errno), errno);
+            break;
+        }
+        if (listen(fd, 4) != 0) {
+            printf("%s : %s (%d)" ESPHOME_LF, "listen", strerror(errno), errno);
+            break;
+        }
+        stop = false;
+        server_fd = fd;
+        printf("%d is listen" ESPHOME_LF, fd);
+        fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
+        pollfds[pollfds_count++] = { fd, POLLIN | POLLERR | POLLHUP | POLLNVAL };
+        ESPHome::Dispatch = dispatch;
+#if defined(__ESP__)
+        xTaskCreate(Poll, "esphome", ESPHOME_STACK_SIZE, nullptr, tskIDLE_PRIORITY, nullptr);
+#endif
+        return true;
+    }
+    if (fd >= 0) {
+        close(fd);
+    }
+    return false;
+}
+
+void Stop()
+{
+    ESPHome::Dispatch = [](int, int, const void*){};
+    stop = true;
+    server_fd = -1;
+    for (int i = 0; i < pollfds_count; ++i)
+        close(pollfds[i].fd);
+    pollfds_count = 0;
 }
 
 };

@@ -6,11 +6,19 @@
 #include "Message.h"
 #include "Setup.h"
 
+#if defined(__ESP__)
 #define HAVE_DUMP_BINARY            1
 #define HAVE_DUMP_SEND_MESSAGE      1
 #define HAVE_DUMP_STRUCT            1
 #define HAVE_DUMP_UNKNOWN_MESSAGE   1
 #define HAVE_SOURCE_SERVER          1
+#else
+#define HAVE_DUMP_BINARY            1
+#define HAVE_DUMP_SEND_MESSAGE      1
+#define HAVE_DUMP_STRUCT            1
+#define HAVE_DUMP_UNKNOWN_MESSAGE   1
+#define HAVE_SOURCE_SERVER          1
+#endif
 
 namespace ESPHome {
 
@@ -22,14 +30,42 @@ namespace ESPHome {
 
 extern Callback const API[ESPHOME_API_COUNT];
 
+static void Message(int fd, void* data, int type, int id, int integer, int upper, std::string_view string)
+{
+    auto callback = (type < ESPHOME_API_COUNT) ? API[type] : nullptr;
+    if (callback) {
+        callback(fd, data, type, id, integer, upper, string);
+        if (id == -1) {
+            Dispatch(type, fd, data);
+        }
+        return;
+    }
+#if HAVE_DUMP_UNKNOWN_MESSAGE
+    if (id == -1) {
+        printf("[%d:%d] : END" ESPHOME_LF, type, id);
+    } else if (string.data()) {
+        printf("[%d:%d] : (%.*s)" ESPHOME_LF, type, id, (int)string.size(), string.data());
+    } else {
+        printf("[%d:%d] : %d" ESPHOME_LF, type, id, integer);
+    }
+#endif
+}
+
 static void DumpBinary(int fd, const char* buffer, int length)
 {
 #if HAVE_DUMP_BINARY
-    printf("%d : ", fd);
-    for (int i = 0; i < length; ++i) {
-        printf("%s%02X", i == 0 ? "" : ".", buffer[i]);
+    size_t count = 16 + 3 * length;
+    char* hex = (char*)malloc(count);
+    if (hex) {
+        char* pointer = hex;
+        pointer += snprintf(pointer, count - (pointer - hex), "%d : ", fd);
+        for (int i = 0; i < length; ++i) {
+            pointer += snprintf(pointer, count - (pointer - hex), "%s%02X", i == 0 ? "" : ".", buffer[i]);
+        }
+        pointer += snprintf(pointer, count - (pointer - hex), "%s", ESPHOME_LF);
+        printf("%s", hex);
+        free(hex);
     }
-    printf("\n");
 #endif
 }
 
@@ -42,6 +78,7 @@ static void DumpType(char const* format,
                      U const& padding = 0)
 {
 #if HAVE_DUMP_STRUCT
+#undef printf
     if constexpr(requires(T t) { t->size(); t->data(); }) {
         printf("%s%s %s = \"%.*s\"\n", tab, type, name, (int)value->size(), (const char*)value->data());
         return;
@@ -58,27 +95,6 @@ static void DumpStruct(T* payload)
 #endif
 }
 
-static void Message(int fd, void* data, int type, int id, int integer, int upper, std::string_view string)
-{
-    auto callback = (type < ESPHOME_API_COUNT) ? API[type] : nullptr;
-    if (callback) {
-        callback(fd, data, type, id, integer, upper, string);
-        if (id == -1) {
-            Dispatch(type, fd, data);
-        }
-        return;
-    }
-#if HAVE_DUMP_UNKNOWN_MESSAGE
-    if (id == -1) {
-        printf("[%d:%d] : END\n", type, id);
-    } else if (string.data()) {
-        printf("[%d:%d] : (%.*s)\n", type, id, (int)string.size(), string.data());
-    } else {
-        printf("[%d:%d] : %d\n", type, id, integer);
-    }
-#endif
-}
-
 void(*Dispatch)(int type, int fd, const void* data) = [](int, int, const void*)
 {
     
@@ -88,11 +104,11 @@ void Send(int fd, int type, ...)
 {
     va_list va;
     va_start(va, type);
-    SendV(fd, type, va);
+    Send(fd, type, va);
     va_end(va);
 }
 
-void SendV(int fd, int type, va_list va)
+void Send(int fd, int type, va_list va)
 {
     char* buffer = (char*)malloc(ESPHOME_BUFFER_SIZE);
     if (buffer == nullptr)

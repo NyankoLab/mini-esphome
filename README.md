@@ -1,2 +1,2 @@
-# ESPHome Server
+# mini-esphome
 Work in progress
