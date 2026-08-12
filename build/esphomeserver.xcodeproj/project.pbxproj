@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F50FFEC630283AF700DF502C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFEC530283AF700DF502C /* main.cpp */; };
-		F50FFECC3028877300DF502C /* ESPHomeServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFECB3028877100DF502C /* ESPHomeServer.cpp */; };
-		F50FFECF302891FB00DF502C /* ESPHomeAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFECD302890D200DF502C /* ESPHomeAPI.cpp */; };
-		F50FFED230299FDA00DF502C /* ESPHomeMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFED130299FD900DF502C /* ESPHomeMessage.cpp */; };
+		F50FFECC3028877300DF502C /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFECB3028877100DF502C /* Server.cpp */; };
+		F50FFECF302891FB00DF502C /* API.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFECD302890D200DF502C /* API.cpp */; };
+		F50FFED230299FDA00DF502C /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFED130299FD900DF502C /* Message.cpp */; };
+		F50FFED6302AFC9700DF502C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFED5302AFC9700DF502C /* main.cpp */; };
+		F50FFEDA302B02D900DF502C /* Setup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50FFED9302B02D800DF502C /* Setup.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,13 +28,15 @@
 
 /* Begin PBXFileReference section */
 		F50FFEB930283A6300DF502C /* ESPHomeServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ESPHomeServer; sourceTree = BUILT_PRODUCTS_DIR; };
-		F50FFEC530283AF700DF502C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		F50FFEC730285B4400DF502C /* ESPHomeAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ESPHomeAPI.h; sourceTree = "<group>"; };
-		F50FFECA302886DB00DF502C /* ESPHomeServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ESPHomeServer.h; sourceTree = "<group>"; };
-		F50FFECB3028877100DF502C /* ESPHomeServer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ESPHomeServer.cpp; sourceTree = "<group>"; };
-		F50FFECD302890D200DF502C /* ESPHomeAPI.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; path = ESPHomeAPI.cpp; sourceTree = "<group>"; };
-		F50FFED030299FCB00DF502C /* ESPHomeMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ESPHomeMessage.h; sourceTree = "<group>"; };
-		F50FFED130299FD900DF502C /* ESPHomeMessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ESPHomeMessage.cpp; sourceTree = "<group>"; };
+		F50FFEC730285B4400DF502C /* API.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = API.h; sourceTree = "<group>"; };
+		F50FFECA302886DB00DF502C /* Server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Server.h; sourceTree = "<group>"; };
+		F50FFECB3028877100DF502C /* Server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Server.cpp; sourceTree = "<group>"; };
+		F50FFECD302890D200DF502C /* API.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; path = API.cpp; sourceTree = "<group>"; };
+		F50FFED030299FCB00DF502C /* Message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Message.h; sourceTree = "<group>"; };
+		F50FFED130299FD900DF502C /* Message.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Message.cpp; sourceTree = "<group>"; };
+		F50FFED5302AFC9700DF502C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		F50FFED7302B019500DF502C /* Setup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Setup.h; sourceTree = "<group>"; };
+		F50FFED9302B02D800DF502C /* Setup.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Setup.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,7 +53,8 @@
 		F50FFEB030283A6300DF502C = {
 			isa = PBXGroup;
 			children = (
-				F50FFEC430283AD900DF502C /* ESPHomeServer */,
+				F50FFED4302AFC4100DF502C /* build */,
+				F50FFEC430283AD900DF502C /* ESPHome */,
 				F50FFEBA30283A6300DF502C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,19 +67,28 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F50FFEC430283AD900DF502C /* ESPHomeServer */ = {
+		F50FFEC430283AD900DF502C /* ESPHome */ = {
 			isa = PBXGroup;
 			children = (
-				F50FFECD302890D200DF502C /* ESPHomeAPI.cpp */,
-				F50FFEC730285B4400DF502C /* ESPHomeAPI.h */,
-				F50FFED130299FD900DF502C /* ESPHomeMessage.cpp */,
-				F50FFED030299FCB00DF502C /* ESPHomeMessage.h */,
-				F50FFECB3028877100DF502C /* ESPHomeServer.cpp */,
-				F50FFECA302886DB00DF502C /* ESPHomeServer.h */,
-				F50FFEC530283AF700DF502C /* main.cpp */,
+				F50FFEC730285B4400DF502C /* API.h */,
+				F50FFECD302890D200DF502C /* API.cpp */,
+				F50FFED030299FCB00DF502C /* Message.h */,
+				F50FFED130299FD900DF502C /* Message.cpp */,
+				F50FFECA302886DB00DF502C /* Server.h */,
+				F50FFECB3028877100DF502C /* Server.cpp */,
+				F50FFED7302B019500DF502C /* Setup.h */,
+				F50FFED9302B02D800DF502C /* Setup.cpp */,
 			);
-			name = ESPHomeServer;
+			name = ESPHome;
 			path = ..;
+			sourceTree = "<group>";
+		};
+		F50FFED4302AFC4100DF502C /* build */ = {
+			isa = PBXGroup;
+			children = (
+				F50FFED5302AFC9700DF502C /* main.cpp */,
+			);
+			name = build;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -96,7 +109,7 @@
 			name = ESPHomeServer;
 			packageProductDependencies = (
 			);
-			productName = esphomeserver;
+			productName = ESPHome;
 			productReference = F50FFEB930283A6300DF502C /* ESPHomeServer */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -138,10 +151,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F50FFECC3028877300DF502C /* ESPHomeServer.cpp in Sources */,
-				F50FFED230299FDA00DF502C /* ESPHomeMessage.cpp in Sources */,
-				F50FFECF302891FB00DF502C /* ESPHomeAPI.cpp in Sources */,
-				F50FFEC630283AF700DF502C /* main.cpp in Sources */,
+				F50FFEDA302B02D900DF502C /* Setup.cpp in Sources */,
+				F50FFECC3028877300DF502C /* Server.cpp in Sources */,
+				F50FFED230299FDA00DF502C /* Message.cpp in Sources */,
+				F50FFED6302AFC9700DF502C /* main.cpp in Sources */,
+				F50FFECF302891FB00DF502C /* API.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +196,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -206,6 +221,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Debug;
 		};
@@ -243,6 +259,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -260,6 +277,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Release;
 		};
@@ -267,6 +285,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -275,6 +294,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

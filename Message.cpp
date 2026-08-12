@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "ESPHomeMessage.h"
+#include "Message.h"
 
 namespace ESPHome {
 

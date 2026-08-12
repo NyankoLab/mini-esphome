@@ -4,23 +4,25 @@
 #include <sys/fcntl.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
-#include <vector>
 
-#include "ESPHomeAPI.h"
-#include "ESPHomeMessage.h"
-#include "ESPHomeServer.h"
+#include "API.h"
+#include "Message.h"
+#include "Server.h"
 
-#define TAG "ESPHome Server"
+#define TAG "ESPHome"
 
 namespace ESPHome {
 namespace Server {
 
 static bool stop = false;
 static int server_fd = -1;
-static std::vector<struct pollfd> pollfds;
+static int pollfds_count = 0;
+static constexpr int pollfds_capacity = 4;
+static struct pollfd pollfds[pollfds_capacity];
 
 bool Start()
 {
+    stop = false;
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     switch (0) default: {
         if (fd < 0) {
@@ -41,9 +43,10 @@ bool Start()
             printf("%s : %s (%d)\n", "listen", strerror(errno), errno);
             break;
         }
-        printf("%s : %d is listen\n", TAG, fd);
         server_fd = fd;
-        pollfds.emplace_back(fd, POLLSTANDARD);
+        printf("%s : %d is listen\n", TAG, fd);
+        fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
+        pollfds[pollfds_count++] = { fd, POLLSTANDARD };
         return true;
     }
     if (fd >= 0) {
@@ -54,33 +57,41 @@ bool Start()
 
 void Stop()
 {
+    stop = true;
     server_fd = -1;
-    for (auto& pollfd : pollfds) {
-        close(pollfd.fd);
-    }
-    pollfds = std::vector<struct pollfd>();
+    for (int i = 0; i < pollfds_count; ++i)
+        close(pollfds[i].fd);
+    pollfds_count = 0;
 }
 
 void Poll()
 {
-    if (pollfds.size() == 0)
-        return;
-    while (stop == false) {
-        int count = poll(pollfds.data(), (int)pollfds.size(), -1);
+    while (stop == false && pollfds_count) {
+        int count = poll(pollfds, pollfds_count, -1);
         if (count == 0)
             continue;
-        for (auto& pollfd : pollfds) {
+        for (int i = 0; i < pollfds_count; ++i) {
+            auto& pollfd = pollfds[i];
             int revents = pollfd.revents;
             pollfd.revents = 0;
             if (revents & POLLIN) {
+
+                // Server
                 if (pollfd.fd == server_fd) {
                     struct sockaddr_storage sockaddr = {};
                     socklen_t length = sizeof(struct sockaddr_storage);
                     int fd = accept(pollfd.fd, (struct sockaddr*)&sockaddr, &length);
                     if (fd >= 0) {
-//                      fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
-                        pollfds.emplace_back(fd, POLLSTANDARD);
+                        if (pollfds_count >= pollfds_capacity) {
+                            close(pollfds[1].fd);
+                            printf("%s : %d is close\n", TAG, pollfds[1].fd);
+                            for (int i = 2; i < pollfds_count; ++i)
+                                pollfds[i - 1] = pollfds[i];
+                            pollfds_count--;
+                        }
                         printf("%s : %d is accept\n", TAG, fd);
+                        fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
+                        pollfds[pollfds_count++] = { fd, POLLSTANDARD };
                         break;
                     }
                     continue;
@@ -102,38 +113,32 @@ void Poll()
                         break;
                 }
 
-                bool finish = false;
+                // Message
+                revents |= POLLHUP;
                 if (count >= 3) {
                     int offset = 0;
                     int length = ESPHome::LengthMessage(header, nullptr, &offset);
                     if (length) {
-                        char* buffer = (char*)malloc(length + count);
+                        char* buffer = (char*)malloc(length);
                         if (buffer) {
                             memcpy(buffer, header, count);
                             if (recv(pollfd.fd, buffer + count, length - count, 0) == length - count) {
                                 ESPHome::Recv(pollfd.fd, buffer, length);
-                                finish = true;
+                                revents &= ~POLLHUP;
                             }
                             free(buffer);
                         }
                     }
                     else {
                         ESPHome::Recv(pollfd.fd, header, count);
-                        finish = true;
+                        revents &= ~POLLHUP;
                     }
                 }
-                if (finish == false) {
-                    revents |= POLLHUP;
-                }
             }
-            if (revents & POLLOUT) {
-                
-            }
-            if (revents & (POLLERR | POLLHUP)) {
+            if (revents & (POLLERR | POLLHUP | POLLNVAL)) {
                 close(pollfd.fd);
                 printf("%s : %d is close\n", TAG, pollfd.fd);
-                pollfd.fd = pollfds.back().fd;
-                pollfds.pop_back();
+                pollfds[i] = pollfds[--pollfds_count];
                 break;
             }
         }

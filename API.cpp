@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
-#include "ESPHomeAPI.h"
-#include "ESPHomeMessage.h"
+#include "API.h"
+#include "Message.h"
+#include "Setup.h"
 
 #define HAVE_DUMP_BINARY    1
 #define HAVE_DUMP_STRUCT    1
@@ -11,7 +12,13 @@
 
 namespace ESPHome {
 
-extern Callback const API[64];
+#define ESPHOME_API_COUNT           64
+#define ESPHOME_API_VERSION_MAJOR   1
+#define ESPHOME_API_VERSION_MINOR   14
+#define ESPHOME_VERSION             "2026.7.4"
+#define ESPHOME_BUFFER_SIZE         1024
+
+extern Callback const API[ESPHOME_API_COUNT];
 
 static void DumpBinary(int fd, const char* buffer, int length)
 {
@@ -32,11 +39,13 @@ static void DumpType(char const* format,
                      T const& value = 0,
                      U const& padding = 0)
 {
+#if HAVE_DUMP_STRUCT
     if constexpr(requires(T t) { t->size(); t->data(); }) {
         printf("%s%s %s = \"%.*s\"\n", tab, type, name, (int)value->size(), value->data());
         return;
     }
     printf(format, tab, type, name, value, padding);
+#endif
 }
 
 template<class T>
@@ -49,7 +58,7 @@ static void DumpStruct(T* payload)
 
 static void Message(int fd, void* data, int type, int id, int integer, int upper, std::string_view string)
 {
-    auto callback = (type < 64) ? API[type] : nullptr;
+    auto callback = (type < ESPHOME_API_COUNT) ? API[type] : nullptr;
     if (callback) {
         callback(fd, data, type, id, integer, upper, string);
         return;
@@ -67,7 +76,7 @@ static void Message(int fd, void* data, int type, int id, int integer, int upper
 
 void Send(int fd, void* data, int type, ...)
 {
-    char* buffer = (char*)malloc(1024);
+    char* buffer = (char*)malloc(ESPHOME_BUFFER_SIZE);
     if (buffer == nullptr)
         return;
     va_list va;
@@ -84,12 +93,12 @@ void Recv(int fd, const char* buffer, int length)
 {
     DumpBinary(fd, buffer, length);
 
-    char* data = (char*)calloc(1024, 1);
+    char* data = (char*)calloc(ESPHOME_BUFFER_SIZE, 1);
     DecodeMessage(buffer, Message, fd, data);
     free(data);
 }
 
-Callback const API[64] =
+Callback const API[ESPHOME_API_COUNT] =
 {
     [HelloRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct HelloRequest* payload = (struct HelloRequest*)data;
@@ -99,10 +108,10 @@ Callback const API[64] =
         case 3:     payload->api_version_minor = integer;                           break;
         case -1:    DumpStruct(payload);
                     Send(fd, data, HelloResponse::id,
-                                   Tag(1, VARINT), 1,
-                                   Tag(2, VARINT), 14,
-                                   Tag(3, LEN), Text("nyanko"),
-                                   Tag(4, LEN), Text("name"),
+                                   Tag(1, VARINT), ESPHOME_API_VERSION_MAJOR,
+                                   Tag(2, VARINT), ESPHOME_API_VERSION_MINOR,
+                                   Tag(3, LEN), Text(ESPHOME_VERSION),
+                                   Tag(4, LEN), Text(Setup::Name),
                                    Tag());
                     break;
         }
@@ -125,7 +134,7 @@ Callback const API[64] =
         case 1:     payload->password = string;                                     break;
         case -1:    DumpStruct(payload);
                     Send(fd, data, AuthenticationResponse::id,
-                                   Tag(1, VARINT), 0,
+                                   Tag(1, VARINT), false,
                                    Tag());
                     break;
         }
@@ -172,13 +181,13 @@ Callback const API[64] =
         DumpStruct(payload);
         Send(fd, data, DeviceInfoResponse::id,
 //                     Tag(1, VARINT), 0,
-                       Tag(2, LEN), Text("name"),
-                       Tag(3, LEN), Text("00:00:00:00:00:00"),
-                       Tag(4, LEN), Text("1.14.0"),
+                       Tag(2, LEN), Text(Setup::Name),
+                       Tag(3, LEN), Text(Setup::GetMacAddress()),
+                       Tag(4, LEN), Text(ESPHOME_VERSION),
                        Tag(5, LEN), Text(__DATE__),
-                       Tag(6, LEN), Text("model"),
-                       Tag(12, LEN), Text("nyanko"),
-                       Tag(13, LEN), Text("friendly_name"),
+                       Tag(6, LEN), Text(Setup::Model),
+                       Tag(12, LEN), Text(Setup::Manufacturer),
+                       Tag(13, LEN), Text(Setup::FriendlyName),
                        Tag());
     },
 #if HAVE_SOURCE_SERVER
@@ -379,6 +388,7 @@ Callback const API[64] =
         case -1:    DumpStruct(payload);                                            break;
         }
     },
+#endif
     [ClimateCommandRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct ClimateCommandRequest* payload = (struct ClimateCommandRequest*)data;
         switch (id) {
@@ -409,7 +419,6 @@ Callback const API[64] =
         case -1:    DumpStruct(payload);                                            break;
         }
     },
-#endif
 };
 
 };
