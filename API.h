@@ -241,6 +241,15 @@ enum ClimatePreset {
     CLIMATE_PRESET_ACTIVITY,
 };
 
+enum ClimateFeature {
+    CLIMATE_SUPPORTS_CURRENT_TEMPERATURE = 1 << 0,
+    CLIMATE_SUPPORTS_TWO_POINT_TARGET_TEMPERATURE = 1 << 1,
+    CLIMATE_REQUIRES_TWO_POINT_TARGET_TEMPERATURE = 1 << 2,
+    CLIMATE_SUPPORTS_CURRENT_HUMIDITY = 1 << 3,
+    CLIMATE_SUPPORTS_TARGET_HUMIDITY = 1 << 4,
+    CLIMATE_SUPPORTS_ACTION = 1 << 5,
+};
+
 struct ListEntitiesClimateResponse { static constexpr int id = 46;
 /* 1  */std::string_view object_id;
 /* 2  */uint32_t key;
