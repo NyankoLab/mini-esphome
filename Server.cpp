@@ -24,16 +24,13 @@ static int pollfds_count = 0;
 static constexpr int pollfds_capacity = 4;
 static struct pollfd pollfds[pollfds_capacity];
 
-void Broadcast(int type, ...)
+void Broadcast(int type, va_list va)
 {
     for (int i = 0; i < pollfds_count; ++i) {
         auto& pollfd = pollfds[i];
         if (pollfd.fd == server_fd)
             continue;
-        va_list va;
-        va_start(va, type);
-        ESPHome::Send(pollfd.fd, type, va);
-        va_end(va);
+        API::Send(pollfd.fd, type, va);
     }
 }
 
@@ -44,9 +41,11 @@ void Dispatch(int type, int fd, const void* data)
 void Poll(void* args)
 {
     while (stop == false && pollfds_count) {
-        int count = poll(pollfds, pollfds_count, -1);
-        if (count == 0)
+        int count = poll(pollfds, pollfds_count, INT_MAX);
+        if (count == 0) {
+            printf("%s : %s" ESPHOME_LF, "poll", "timeout");
             continue;
+        }
         for (int i = 0; i < pollfds_count; ++i) {
             auto& pollfd = pollfds[i];
             int revents = pollfd.revents;
@@ -61,13 +60,12 @@ void Poll(void* args)
                     if (fd >= 0) {
                         if (pollfds_count >= pollfds_capacity) {
                             close(pollfds[1].fd);
-                            printf("%d is close" ESPHOME_LF, pollfds[1].fd);
+                            printf("%d : %s" ESPHOME_LF, pollfds[1].fd, "close");
                             for (int i = 2; i < pollfds_count; ++i)
                                 pollfds[i - 1] = pollfds[i];
                             pollfds_count--;
                         }
-                        printf("%d is accept" ESPHOME_LF, fd);
-                        fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
+                        printf("%d : %s" ESPHOME_LF, fd, "accept");
                         pollfds[pollfds_count++] = { fd, POLLIN | POLLERR | POLLHUP | POLLNVAL };
                         break;
                     }
@@ -80,7 +78,7 @@ void Poll(void* args)
                 int field = 0;
                 for (int i = 0; i < 6; ++i) {
                     char c = 0;
-                    if (recv(pollfd.fd, &c, 1, 0) != 1)
+                    if (recv(pollfd.fd, &c, 1, MSG_DONTWAIT) != 1)
                         break;
                     header[i] = c;
                     count++;
@@ -94,26 +92,28 @@ void Poll(void* args)
                 revents |= POLLHUP;
                 if (count >= 3) {
                     int offset = 0;
-                    int length = ESPHome::LengthMessage(header, nullptr, &offset);
-                    if (length) {
+                    int length = Message::Length(header, nullptr, &offset);
+                    if (length > count) {
                         char* buffer = (char*)malloc(length);
                         if (buffer) {
                             memcpy(buffer, header, count);
-                            if (recv(pollfd.fd, buffer + count, length - count, 0) == length - count) {
-                                ESPHome::Recv(pollfd.fd, buffer, length);
+                            if (recv(pollfd.fd, buffer + count, length - count, MSG_DONTWAIT) == length - count) {
+                                API::Recv(pollfd.fd, buffer, length);
                                 revents &= ~POLLHUP;
                             }
                             free(buffer);
+                        } else {
+                            printf("%d : %s" ESPHOME_LF, pollfd.fd, "out of memory");
                         }
                     } else {
-                        ESPHome::Recv(pollfd.fd, header, count);
+                        API::Recv(pollfd.fd, header, count);
                         revents &= ~POLLHUP;
                     }
                 }
             }
             if (revents & (POLLERR | POLLHUP | POLLNVAL)) {
                 close(pollfd.fd);
-                printf("%d is close" ESPHOME_LF, pollfd.fd);
+                printf("%d : %s" ESPHOME_LF, pollfd.fd, "close");
                 pollfds[i] = pollfds[--pollfds_count];
                 break;
             }
@@ -147,10 +147,9 @@ bool Start(void(*dispatch)(int type, int fd, const void* data))
         }
         stop = false;
         server_fd = fd;
-        printf("%d is listen" ESPHOME_LF, fd);
-        fcntl(fd, F_SETFL, O_NONBLOCK | fcntl(fd, F_GETFL, 0));
+        printf("%d : %s" ESPHOME_LF, fd, "listen");
         pollfds[pollfds_count++] = { fd, POLLIN | POLLERR | POLLHUP | POLLNVAL };
-        ESPHome::Dispatch = dispatch;
+        API::Dispatch = dispatch;
 #if defined(__ESP__)
         xTaskCreate(Poll, "esphome", ESPHOME_STACK_SIZE, nullptr, tskIDLE_PRIORITY, nullptr);
 #endif
@@ -164,7 +163,7 @@ bool Start(void(*dispatch)(int type, int fd, const void* data))
 
 void Stop()
 {
-    ESPHome::Dispatch = [](int, int, const void*){};
+    API::Dispatch = [](int, int, const void*){};
     stop = true;
     server_fd = -1;
     for (int i = 0; i < pollfds_count; ++i)

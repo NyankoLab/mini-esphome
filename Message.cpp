@@ -6,8 +6,10 @@
 #include "Message.h"
 
 namespace ESPHome {
+namespace Message {
 
-int Read16BE(const char*& buffer)
+__attribute__((unused))
+static int Read16BE(const char*& buffer)
 {
     int value = 0;
     value |= uint8_t(*buffer++) << 8;
@@ -15,7 +17,8 @@ int Read16BE(const char*& buffer)
     return value;
 }
 
-int Read16LE(const char*& buffer)
+__attribute__((unused))
+static int Read16LE(const char*& buffer)
 {
     int value = 0;
     value |= uint8_t(*buffer++);
@@ -23,7 +26,8 @@ int Read16LE(const char*& buffer)
     return value;
 }
 
-int Read32BE(const char*& buffer)
+__attribute__((unused))
+static int Read32BE(const char*& buffer)
 {
     int value = 0;
     value |= uint8_t(*buffer++) << 24;
@@ -33,7 +37,8 @@ int Read32BE(const char*& buffer)
     return value;
 }
 
-int Read32LE(const char*& buffer)
+__attribute__((unused))
+static int Read32LE(const char*& buffer)
 {
     int value = 0;
     value |= uint8_t(*buffer++);
@@ -43,19 +48,22 @@ int Read32LE(const char*& buffer)
     return value;
 }
 
-void Write16BE(char*& buffer, int value)
+__attribute__((unused))
+static void Write16BE(char*& buffer, int value)
 {
     (*buffer++) = value >> 8;
     (*buffer++) = value;
 }
 
-void Write16LE(char*& buffer, int value)
+__attribute__((unused))
+static void Write16LE(char*& buffer, int value)
 {
     (*buffer++) = value;
     (*buffer++) = value >> 8;
 }
 
-void Write32BE(char*& buffer, int value)
+__attribute__((unused))
+static void Write32BE(char*& buffer, int value)
 {
     (*buffer++) = value >> 24;
     (*buffer++) = value >> 16;
@@ -63,7 +71,8 @@ void Write32BE(char*& buffer, int value)
     (*buffer++) = value;
 }
 
-void Write32LE(char*& buffer, int value)
+__attribute__((unused))
+static void Write32LE(char*& buffer, int value)
 {
     (*buffer++) = value;
     (*buffer++) = value >> 8;
@@ -71,7 +80,7 @@ void Write32LE(char*& buffer, int value)
     (*buffer++) = value >> 24;
 }
 
-int DecodeBase128(const char*& buffer)
+static int DecodeBase128(const char*& buffer)
 {
     uint8_t byte = 0;
     int shift = 0;
@@ -84,7 +93,7 @@ int DecodeBase128(const char*& buffer)
     return value;
 }
 
-void EncoderBase128(char*& buffer, int value)
+static void EncoderBase128(char*& buffer, int value)
 {
     uint8_t byte = 0;
     do {
@@ -96,7 +105,7 @@ void EncoderBase128(char*& buffer, int value)
     } while (value);
 }
 
-bool DecodeProtobuf(const char* buffer, const char* end, int type, Callback callback, int fd, void* data)
+static bool DecodeProtobuf(const char* buffer, const char* end, int type, Callback callback, int fd, void* data)
 {
     uint32_t upper = 0;
     uint32_t value = 0;
@@ -132,7 +141,7 @@ bool DecodeProtobuf(const char* buffer, const char* end, int type, Callback call
     return true;
 }
 
-void EncodeProtobuf(char*& buffer, va_list va)
+static void EncodeProtobuf(char*& buffer, va_list va)
 {
     uint32_t upper = 0;
     uint32_t value = 0;
@@ -169,12 +178,12 @@ void EncodeProtobuf(char*& buffer, va_list va)
     }
 }
 
-int DecodeMessage(const char* buffer, Callback callback, int fd, void* data)
+int Decode(const char* buffer, Callback callback, int fd, void* data)
 {
     const char* start = buffer;
     int type = 0;
     int offset = 0;
-    int size = LengthMessage(buffer, &type, &offset);
+    int size = Length(buffer, &type, &offset);
 
     if (callback) {
         if (DecodeProtobuf(start + offset, start + size, type, callback, fd, data)) {
@@ -186,7 +195,7 @@ int DecodeMessage(const char* buffer, Callback callback, int fd, void* data)
     return size;
 }
 
-int EncodeMessage(char* buffer, int type, va_list va)
+int Encode(char* buffer, int type, va_list va)
 {
     char* start = buffer;
     (*buffer++) = 0x00;
@@ -212,7 +221,7 @@ int EncodeMessage(char* buffer, int type, va_list va)
     return size + offset;
 }
 
-int LengthMessage(const char* buffer, int* type, int* offset)
+int Length(const char* buffer, int* type, int* offset)
 {
     const char* start = buffer;
     int values[3] = {};
@@ -228,4 +237,5 @@ int LengthMessage(const char* buffer, int* type, int* offset)
     return values[1] + int(buffer - start);
 }
 
+};
 };

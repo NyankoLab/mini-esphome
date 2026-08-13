@@ -5,13 +5,20 @@
 #include "API.h"
 #include "Message.h"
 #include "Setup.h"
+using ESPHome::Message::CastDouble;
+using ESPHome::Message::CastFloat;
+using ESPHome::Message::CastInt;
+using ESPHome::Message::Tag;
+using ESPHome::Message::VARINT;
+using ESPHome::Message::LEN;
+using ESPHome::Message::I32;
 
 #if defined(__ESP__)
-#define HAVE_DUMP_BINARY            1
-#define HAVE_DUMP_SEND_MESSAGE      1
-#define HAVE_DUMP_STRUCT            1
-#define HAVE_DUMP_UNKNOWN_MESSAGE   1
-#define HAVE_SOURCE_SERVER          1
+#define HAVE_DUMP_BINARY            0
+#define HAVE_DUMP_SEND_MESSAGE      0
+#define HAVE_DUMP_STRUCT            0
+#define HAVE_DUMP_UNKNOWN_MESSAGE   0
+#define HAVE_SOURCE_SERVER          0
 #else
 #define HAVE_DUMP_BINARY            1
 #define HAVE_DUMP_SEND_MESSAGE      1
@@ -21,6 +28,7 @@
 #endif
 
 namespace ESPHome {
+namespace API {
 
 #define ESPHOME_API_COUNT           64
 #define ESPHOME_API_VERSION_MAJOR   1
@@ -28,7 +36,7 @@ namespace ESPHome {
 #define ESPHOME_VERSION             "2026.7.4"
 #define ESPHOME_BUFFER_SIZE         1024
 
-extern Callback const API[ESPHOME_API_COUNT];
+extern Message::Callback const API[ESPHOME_API_COUNT];
 
 static void Message(int fd, void* data, int type, int id, int integer, int upper, std::string_view string)
 {
@@ -113,12 +121,12 @@ void Send(int fd, int type, va_list va)
     char* buffer = (char*)malloc(ESPHOME_BUFFER_SIZE);
     if (buffer == nullptr)
         return;
-    int length = EncodeMessage(buffer, type, va);
+    int length = Message::Encode(buffer, type, va);
     DumpBinary(fd, buffer, length);
 #if HAVE_DUMP_SEND_MESSAGE
     char* data = (char*)calloc(ESPHOME_BUFFER_SIZE, sizeof(char));
     if (data) {
-        DecodeMessage(buffer, API[type], fd, data);
+        Message::Decode(buffer, API[type], fd, data);
         free(data);
     }
 #endif
@@ -132,11 +140,11 @@ void Recv(int fd, const char* buffer, int length)
     char* data = (char*)calloc(ESPHOME_BUFFER_SIZE, sizeof(char));
     if (data == nullptr)
         return;
-    DecodeMessage(buffer, Message, fd, data);
+    Message::Decode(buffer, Message, fd, data);
     free(data);
 }
 
-Callback const API[ESPHOME_API_COUNT] =
+Message::Callback const API[ESPHOME_API_COUNT] =
 {
     [HelloRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct HelloRequest* payload = (struct HelloRequest*)data;
@@ -231,6 +239,7 @@ Callback const API[ESPHOME_API_COUNT] =
                  Tag(4, LEN), Text(ESPHOME_VERSION),
                  Tag(5, LEN), Text(__DATE__),
                  Tag(6, LEN), Text(Setup::Model),
+                 Tag(10, VARINT), 80,
                  Tag(12, LEN), Text(Setup::Manufacturer),
                  Tag(13, LEN), Text(Setup::FriendlyName),
                  Tag());
@@ -248,7 +257,7 @@ Callback const API[ESPHOME_API_COUNT] =
 //      case 7:     payload->has_deep_sleep = integer;                              break;
 //      case 8:     payload->project_name = string;                                 break;
 //      case 9:     payload->project_version = string;                              break;
-//      case 10:    payload->webserver_port = integer;                              break;
+        case 10:    payload->webserver_port = integer;                              break;
 //      case 11:    payload->legacy_bluetooth_proxy_version = integer;              break;
 //      case 15:    payload->bluetooth_proxy_feature_flags = integer;               break;
         case 12:    payload->manufacturer = string;                                 break;
@@ -486,4 +495,5 @@ Callback const API[ESPHOME_API_COUNT] =
     },
 };
 
+};
 };

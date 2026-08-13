@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace ESPHome {
+namespace API {
 
 enum DisconnectReason {
     DISCONNECT_REASON_UNSPECIFIED = 0,
@@ -61,7 +62,7 @@ struct DeviceInfoResponse { static constexpr int id = 10;
 // 7  */bool has_deep_sleep;
 // 8  */std::string_view project_name;
 // 9  */std::string_view project_version;
-// 10 */uint32_t webserver_port;
+/* 10 */uint32_t webserver_port;
 // 11 */uint32_t legacy_bluetooth_proxy_version;
 // 15 */uint32_t bluetooth_proxy_feature_flags;
 /* 12 */std::string_view manufacturer;
@@ -345,4 +346,5 @@ extern void Send(int fd, int type, ...);
 extern void Send(int fd, int type, va_list va);
 extern void Recv(int fd, const char* buffer, int length);
 
+};
 };

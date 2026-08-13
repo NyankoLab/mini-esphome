@@ -5,6 +5,7 @@
 #include <string_view>
 
 namespace ESPHome {
+namespace Message {
 
 typedef void (*Callback)(int fd, void* data, int type, int id, int integer, int upper, std::string_view string);
 
@@ -38,11 +39,9 @@ enum WireType {
     I32,        // 5 fixed32, sfixed32, float
 };
 
-bool DecodeProtobuf(const char* buffer, const char* end, int type, Callback callback, int fd, void* data);
-void EncodeProtobuf(char*& buffer, va_list va);
+int Decode(const char* buffer, Callback callback, int fd, void* data);
+int Encode(char* buffer, int type, va_list va);
+int Length(const char* buffer, int* type = nullptr, int* offset = nullptr);
 
-int DecodeMessage(const char* buffer, Callback callback, int fd, void* data);
-int EncodeMessage(char* buffer, int type, va_list va);
-int LengthMessage(const char* buffer, int* type = nullptr, int* offset = nullptr);
-
+};
 };
