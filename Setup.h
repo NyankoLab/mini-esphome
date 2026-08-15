@@ -10,14 +10,13 @@
 #define fcntl lwip_fcntl
 #define listen lwip_listen
 #define poll lwip_poll
-#define printf(...) ESP_LOGI("esphome", __VA_ARGS__)
 #define recv lwip_recv
 #define send lwip_send
 #define setsockopt lwip_setsockopt
 #define socket lwip_socket
-#define ESPHOME_LF ""
+#define println(format, ...) ESP_LOGI("esphome", format, __VA_ARGS__)
 #else
-#define ESPHOME_LF "\n"
+#define println(format, ...) printf(format "\n", __VA_ARGS__)
 #endif
 
 namespace ESPHome {

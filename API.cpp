@@ -50,11 +50,11 @@ static void Message(int fd, void* data, int type, int id, int integer, int upper
     }
 #if HAVE_DUMP_UNKNOWN_MESSAGE
     if (id == -1) {
-        printf("[%d:%d] : END" ESPHOME_LF, type, id);
+        println("[%d:%d] : END", type, id);
     } else if (string.data()) {
-        printf("[%d:%d] : (%.*s)" ESPHOME_LF, type, id, (int)string.size(), string.data());
+        println("[%d:%d] : (%.*s)", type, id, (int)string.size(), string.data());
     } else {
-        printf("[%d:%d] : %d" ESPHOME_LF, type, id, integer);
+        println("[%d:%d] : %d", type, id, integer);
     }
 #endif
 }
@@ -70,8 +70,7 @@ static void DumpBinary(int fd, const char* buffer, int length)
         for (int i = 0; i < length; ++i) {
             pointer += snprintf(pointer, count - (pointer - hex), "%s%02X", i == 0 ? "" : ".", buffer[i]);
         }
-        pointer += snprintf(pointer, count - (pointer - hex), "%s", ESPHOME_LF);
-        printf("%s", hex);
+        println("%s", hex);
         free(hex);
     }
 #endif
@@ -86,7 +85,6 @@ static void DumpType(char const* format,
                      U const& padding = 0)
 {
 #if HAVE_DUMP_STRUCT
-#undef printf
     if constexpr(requires(T t) { t->size(); t->data(); }) {
         printf("%s%s %s = \"%.*s\"\n", tab, type, name, (int)value->size(), (const char*)value->data());
         return;
