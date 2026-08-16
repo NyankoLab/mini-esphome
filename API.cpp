@@ -555,6 +555,54 @@ Message::Callback const API[ESPHOME_API_COUNT] =
                     break;
         }
     },
+    // ==================== NUMBER ====================
+#if HAVE_SOURCE_SERVER
+    [ListEntitiesNumberResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct ListEntitiesNumberResponse* payload = (struct ListEntitiesNumberResponse*)data;
+        switch (id) {
+        case 1:     payload->object_id = string;                                    break;
+        case 2:     payload->key = integer;                                         break;
+        case 3:     payload->name = string;                                         break;
+//      case 4:
+        case 5:     payload->icon = string;                                         break;
+        case 6:     payload->min_value = CastFloat(integer);                        break;
+        case 7:     payload->max_value = CastFloat(integer);                        break;
+        case 8:     payload->step = CastFloat(integer);                             break;
+        case 9:     payload->disabled_by_default = integer;                         break;
+        case 10:    payload->entity_category = EntityCategory(integer);             break;
+        case 11:    payload->unit_of_measurement = string;                          break;
+        case 12:    payload->mode = NumberMode(integer);                            break;
+        case 13:    payload->device_class = string;                                 break;
+//      case 14:    payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ListEntitiesNumberResponse();
+                    break;
+        }
+    },
+    [NumberStateResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct NumberStateResponse* payload = (struct NumberStateResponse*)data;
+        switch (id) {
+        case 1:     payload->key = integer;                                         break;
+        case 2:     payload->state = CastFloat(integer);                            break;
+        case 3:     payload->missing_state = integer;                               break;
+//      case 4:     payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~NumberStateResponse();
+                    break;
+        }
+    },
+#endif
+    [NumberCommandRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct NumberCommandRequest* payload = (struct NumberCommandRequest*)data;
+        switch (id) {
+        case 1:     payload->key = integer;                                         break;
+        case 2:     payload->state = CastFloat(integer);                            break;
+//      case 3:     payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~NumberCommandRequest();
+                    break;
+        }
+    },
     // ==================== SELECT ====================
 #if HAVE_SOURCE_SERVER
     [ListEntitiesSelectResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {

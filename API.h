@@ -384,6 +384,42 @@ struct ClimateCommandRequest { static constexpr int id = 48;
 
 // ==================== WATER_HEATER ====================
 // ==================== NUMBER ====================
+enum NumberMode {
+    NUMBER_MODE_AUTO = 0,
+    NUMBER_MODE_BOX,
+    NUMBER_MODE_SLIDER,
+};
+
+struct ListEntitiesNumberResponse { static constexpr int id = 49;
+/* 1  */std::string_view object_id;
+/* 2  */uint32_t key;
+/* 3  */std::string_view name;
+// 4  */reserved
+/* 5  */std::string_view icon;
+/* 6  */float min_value;
+/* 7  */float max_value;
+/* 8  */float step;
+/* 9  */bool disabled_by_default;
+/* 10 */EntityCategory entity_category;
+/* 11 */std::string_view unit_of_measurement;
+/* 12 */NumberMode mode;
+/* 13 */std::string_view device_class;
+/* 14 */uint32_t device_id;
+};
+
+struct NumberStateResponse { static constexpr int id = 50;
+/* 1  */uint32_t key;
+/* 2  */float state;
+/* 3  */bool missing_state;
+// 4  */uint32_t device_id;
+};
+
+struct NumberCommandRequest { static constexpr int id = 51;
+/* 1  */uint32_t key;
+/* 2  */float state;
+// 3  */uint32_t device_id;
+};
+
 // ==================== SELECT ====================
 struct ListEntitiesSelectResponse { static constexpr int id = 52;
 /* 1  */std::string_view object_id;
