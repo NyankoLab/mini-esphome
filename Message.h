@@ -24,6 +24,14 @@ inline int CastInt(float number) {
     return *(int*)&number;
 }
 
+inline int DecodeInt(int integer) {
+    return (integer >> 1) ^ -(integer & 1);
+}
+
+inline int EncodeInt(int integer) {
+    return (integer << 1) ^ (integer >> 31);
+}
+
 inline int Tag(int field = 0, int wire = 7) {
     return (field << 3) | wire;
 }

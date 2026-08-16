@@ -100,6 +100,61 @@ enum EntityCategory {
 // ==================== BINARY SENSOR ====================
 // ==================== COVER ====================
 // ==================== FAN ====================
+struct ListEntitiesFanResponse { static constexpr int id = 14;
+/* 1  */std::string_view object_id;
+/* 2  */uint32_t key;
+/* 3  */std::string_view name;
+// 4  */reserved
+/* 5  */bool supports_oscillation;
+/* 6  */bool supports_speed;
+/* 7  */bool supports_direction;
+/* 8  */int32_t supported_speed_count;
+/* 9  */bool disabled_by_default;
+/* 10 */std::string_view icon;
+/* 11 */EntityCategory entity_category;
+/* 12 */std::vector<std::string_view> supported_preset_modes;
+// 13 */uint32_t device_id;
+};
+
+enum FanSpeed {
+    FAN_SPEED_LOW = 0,
+    FAN_SPEED_MEDIUM,
+    FAN_SPEED_HIGH,
+};
+
+enum FanDirection {
+    FAN_DIRECTION_FORWARD = 0,
+    FAN_DIRECTION_REVERSE,
+};
+
+struct FanStateResponse { static constexpr int id = 24;
+/* 1  */uint32_t key;
+/* 2  */bool state;
+/* 3  */bool oscillating;
+// 4  */FanSpeed speed;
+/* 5  */FanDirection direction;
+/* 6  */int32_t speed_level;
+/* 7  */std::string_view preset_mode;
+// 8  */uint32_t device_id;
+};
+
+struct FanCommandRequest { static constexpr int id = 31;
+/* 1  */uint32_t key;
+/* 2  */bool has_state;
+/* 3  */bool state;
+// 4  */bool has_speed;
+// 5  */FanSpeed speed;
+/* 6  */bool has_oscillating;
+/* 7  */bool oscillating;
+/* 8  */bool has_direction;
+/* 9  */FanDirection direction;
+/* 10 */bool has_speed_level;
+/* 11 */int32_t speed_level;
+/* 12 */bool has_preset_mode;
+/* 13 */std::string_view preset_mode;
+// 14 */uint32_t device_id;
+};
+
 // ==================== LIGHT ====================
 // ==================== SENSOR ====================
 enum SensorStateClass {
@@ -330,6 +385,31 @@ struct ClimateCommandRequest { static constexpr int id = 48;
 // ==================== WATER_HEATER ====================
 // ==================== NUMBER ====================
 // ==================== SELECT ====================
+struct ListEntitiesSelectResponse { static constexpr int id = 52;
+/* 1  */std::string_view object_id;
+/* 2  */uint32_t key;
+/* 3  */std::string_view name;
+// 4  */reserved
+/* 5  */std::string_view icon;
+/* 6  */std::vector<std::string_view> options;
+/* 7  */bool disabled_by_default;
+/* 8  */EntityCategory entity_category;
+// 9  */uint32_t device_id;
+};
+
+struct SelectStateResponse { static constexpr int id = 53;
+/* 1  */uint32_t key;
+/* 2  */std::string_view state;
+/* 3  */bool missing_state;
+// 4  */uint32_t device_id;
+};
+
+struct SelectCommandRequest { static constexpr int id = 54;
+/* 1  */uint32_t key;
+/* 2  */std::string_view state;
+// 3  */uint32_t device_id;
+};
+
 // ==================== SIREN ====================
 // ==================== LOCK ====================
 // ==================== BUTTON ====================

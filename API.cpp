@@ -292,6 +292,68 @@ Message::Callback const API[ESPHOME_API_COUNT] =
         struct SubscribeStatesRequest* payload = (struct SubscribeStatesRequest*)data;
         DumpStruct(payload);
     },
+    // ==================== FAN ====================
+#if HAVE_SOURCE_SERVER
+    [ListEntitiesFanResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct ListEntitiesFanResponse* payload = (struct ListEntitiesFanResponse*)data;
+        switch (id) {
+        case 1:     payload->object_id = string;                                    break;
+        case 2:     payload->key = integer;                                         break;
+        case 3:     payload->name = string;                                         break;
+//      case 4:
+        case 5:     payload->supports_oscillation = integer;                        break;
+        case 6:     payload->supports_speed = integer;                              break;
+        case 7:     payload->supports_direction = integer;                          break;
+        case 8:     payload->supported_speed_count = integer;                       break;
+        case 9:     payload->disabled_by_default = integer;                         break;
+        case 10:    payload->icon = string;                                         break;
+        case 11:    payload->entity_category = EntityCategory(integer);             break;
+        case 12:    payload->supported_preset_modes.push_back(string);              break;
+//      case 13:    payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ListEntitiesFanResponse();
+                    break;
+        }
+    },
+    [FanStateResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct FanStateResponse* payload = (struct FanStateResponse*)data;
+        switch (id) {
+        case 1:     payload->key = integer;                                         break;
+        case 2:     payload->state = integer;                                       break;
+        case 3:     payload->oscillating = integer;                                 break;
+//      case 4:     payload->speed = integer;                                       break;
+        case 5:     payload->direction = FanDirection(integer);                     break;
+        case 6:     payload->speed_level = integer;                                 break;
+        case 7:     payload->preset_mode = string;                                  break;
+//      case 8:     payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~FanStateResponse();
+                    break;
+        }
+    },
+#endif
+    [FanCommandRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct FanCommandRequest* payload = (struct FanCommandRequest*)data;
+        switch (id) {
+        case 1:     payload->key = integer;                                         break;
+        case 2:     payload->has_state = integer;                                   break;
+        case 3:     payload->state = integer;                                       break;
+//      case 4:     payload->has_speed = integer;                                   break;
+//      case 5:     payload->speed = FanSpeed(integer);                             break;
+        case 6:     payload->has_oscillating = integer;                             break;
+        case 7:     payload->oscillating = integer;                                 break;
+        case 8:     payload->has_direction = integer;                               break;
+        case 9:     payload->direction = FanDirection(integer);                     break;
+        case 10:    payload->has_speed_level = integer;                             break;
+        case 11:    payload->speed_level = integer;                                 break;
+        case 12:    payload->has_preset_mode = integer;                             break;
+        case 13:    payload->preset_mode = string;                                  break;
+//      case 14:    payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~FanCommandRequest();
+                    break;
+        }
+    },
     // ==================== SENSOR ====================
 #if HAVE_SOURCE_SERVER
     [ListEntitiesSensorResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
@@ -300,6 +362,7 @@ Message::Callback const API[ESPHOME_API_COUNT] =
         case 1:     payload->object_id = string;                                    break;
         case 2:     payload->key = integer;                                         break;
         case 3:     payload->name = string;                                         break;
+//      case 4:
         case 5:     payload->icon = string;                                         break;
         case 6:     payload->unit_of_measurement = string;                          break;
         case 7:     payload->accuracy_decimals = integer;                           break;
@@ -334,6 +397,7 @@ Message::Callback const API[ESPHOME_API_COUNT] =
         case 1:     payload->object_id = string;                                    break;
         case 2:     payload->key = integer;                                         break;
         case 3:     payload->name = string;                                         break;
+//      case 4:
         case 5:     payload->icon = string;                                         break;
         case 6:     payload->assumed_state = integer;                               break;
         case 7:     payload->disabled_by_default = integer;                         break;
@@ -488,6 +552,49 @@ Message::Callback const API[ESPHOME_API_COUNT] =
 //      case 24:    payload->device_id = integer;                                   break;
         case -1:    DumpStruct(payload);
         case -2:    payload->~ClimateCommandRequest();
+                    break;
+        }
+    },
+    // ==================== SELECT ====================
+#if HAVE_SOURCE_SERVER
+    [ListEntitiesSelectResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct ListEntitiesSelectResponse* payload = (struct ListEntitiesSelectResponse*)data;
+        switch (id) {
+        case 1:     payload->object_id = string;                                    break;
+        case 2:     payload->key = integer;                                         break;
+        case 3:     payload->name = string;                                         break;
+//      case 4:
+        case 5:     payload->icon = string;                                         break;
+        case 6:     payload->options.push_back(string);                             break;
+        case 7:     payload->disabled_by_default = integer;                         break;
+        case 8:     payload->entity_category = EntityCategory(integer);             break;
+//      case 9:     payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~ListEntitiesSelectResponse();
+                    break;
+        }
+    },
+    [SelectStateResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct SelectStateResponse* payload = (struct SelectStateResponse*)data;
+        switch (id) {
+        case 1:     payload->key = integer;                                         break;
+        case 2:     payload->state = string;                                        break;
+        case 3:     payload->missing_state = integer;                               break;
+//      case 4:     payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~SelectStateResponse();
+                    break;
+        }
+    },
+#endif
+    [SelectCommandRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
+        struct SelectCommandRequest* payload = (struct SelectCommandRequest*)data;
+        switch (id) {
+        case 1:     payload->key = integer;                                         break;
+        case 2:     payload->state = string;                                        break;
+//      case 3:     payload->device_id = integer;                                   break;
+        case -1:    DumpStruct(payload);
+        case -2:    payload->~SelectCommandRequest();
                     break;
         }
     },
