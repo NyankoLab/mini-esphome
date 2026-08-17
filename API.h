@@ -127,7 +127,7 @@ enum FanDirection {
     FAN_DIRECTION_REVERSE,
 };
 
-struct FanStateResponse { static constexpr int id = 24;
+struct FanStateResponse { static constexpr int id = 23;
 /* 1  */uint32_t key;
 /* 2  */bool state;
 /* 3  */bool oscillating;
@@ -404,7 +404,7 @@ struct ListEntitiesNumberResponse { static constexpr int id = 49;
 /* 11 */std::string_view unit_of_measurement;
 /* 12 */NumberMode mode;
 /* 13 */std::string_view device_class;
-/* 14 */uint32_t device_id;
+// 14 */uint32_t device_id;
 };
 
 struct NumberStateResponse { static constexpr int id = 50;
