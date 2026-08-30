@@ -53,7 +53,7 @@ struct DeviceInfoRequest { static constexpr int id = 9;
 };
 
 struct DeviceInfoResponse { static constexpr int id = 10;
-// 1  */bool uses_password;
+// 1  */bool uses_password;                             // deprecated in 2026.1.0
 /* 2  */std::string_view name;
 /* 3  */std::string_view mac_address;
 /* 4  */std::string_view esphome_version;
@@ -63,21 +63,21 @@ struct DeviceInfoResponse { static constexpr int id = 10;
 // 8  */std::string_view project_name;
 // 9  */std::string_view project_version;
 /* 10 */uint32_t webserver_port;
-// 11 */uint32_t legacy_bluetooth_proxy_version;
-// 15 */uint32_t bluetooth_proxy_feature_flags;
+// 11 */uint32_t legacy_bluetooth_proxy_version;        // deprecated in 1.9
+// 15 */uint32_t bluetooth_proxy_feature_flags;         // deprecated in 1.15
 /* 12 */std::string_view manufacturer;
 /* 13 */std::string_view friendly_name;
-// 14 */uint32_t legacy_voice_assistant_version;
-// 17 */uint32_t voice_assistant_feature_flags;
+// 14 */uint32_t legacy_voice_assistant_version;        // deprecated in 1.10
+// 17 */uint32_t voice_assistant_feature_flags;         // deprecated in 1.15
 // 16 */std::string_view suggested_area;
 // 18 */std::string_view bluetooth_mac_address;
 // 19 */bool api_encryption_supported;
 // 20 */std::vector<DeviceInfo> devices;
 // 21 */std::vector<AreaInfo> areas;
 // 22 */AreaInfo area;
-// 23 */uint32_t zwave_proxy_feature_flags;
-// 24 */uint32_t zwave_home_id;
-// 25 */std::vector<SerialProxyInfo> serial_proxies;
+// 23 */uint32_t zwave_proxy_feature_flags;             // deprecated in 1.15
+// 24 */uint32_t zwave_home_id;                         // deprecated in 1.15
+// 25 */std::vector<SerialProxyInfo> serial_proxies;    // deprecated in 1.15
 // 26 */bool api_encryption_provisionable;
 };
 
@@ -131,7 +131,7 @@ struct FanStateResponse { static constexpr int id = 23;
 /* 1  */uint32_t key;
 /* 2  */bool state;
 /* 3  */bool oscillating;
-// 4  */FanSpeed speed;
+// 4  */FanSpeed speed;                                 // deprecated in 1.6
 /* 5  */FanDirection direction;
 /* 6  */int32_t speed_level;
 /* 7  */std::string_view preset_mode;
@@ -142,8 +142,8 @@ struct FanCommandRequest { static constexpr int id = 31;
 /* 1  */uint32_t key;
 /* 2  */bool has_state;
 /* 3  */bool state;
-// 4  */bool has_speed;
-// 5  */FanSpeed speed;
+// 4  */bool has_speed;                                 // deprecated in 1.6
+// 5  */FanSpeed speed;                                 // deprecated in 1.6
 /* 6  */bool has_oscillating;
 /* 7  */bool oscillating;
 /* 8  */bool has_direction;
@@ -176,7 +176,7 @@ struct ListEntitiesSensorResponse { static constexpr int id = 16;
 /* 8  */bool force_update;
 /* 9  */std::string_view device_class;
 /* 10 */SensorStateClass state_class;
-// 11 */SensorLastResetType legacy_last_reset_type;
+// 11 */SensorLastResetType legacy_last_reset_type;     // deprecated in 2021.9.0 and 1.5
 /* 12 */bool disabled_by_default;
 /* 13 */EntityCategory entity_category;
 // 14 */uint32_t device_id;
@@ -316,7 +316,7 @@ struct ListEntitiesClimateResponse { static constexpr int id = 46;
 /* 8  */float visual_min_temperature;
 /* 9  */float visual_max_temperature;
 /* 10 */float visual_target_temperature_step;
-// 11 */bool legacy_supports_away;
+// 11 */bool legacy_supports_away;                      // deprecated in 1.5
 // 12 */bool supports_action;
 /* 13 */std::vector<ClimateFanMode> supported_fan_modes;
 /* 14 */std::vector<ClimateSwingMode> supported_swing_modes;
@@ -343,7 +343,7 @@ struct ClimateStateResponse { static constexpr int id = 47;
 /* 4  */float target_temperature;
 /* 5  */float target_temperature_low;
 /* 6  */float target_temperature_high;
-// 7  */bool unused_legacy_away;
+// 7  */bool unused_legacy_away;                        // deprecated in 1.5
 /* 8  */ClimateAction action;
 /* 9  */ClimateFanMode fan_mode;
 /* 10 */ClimateSwingMode swing_mode;
@@ -365,8 +365,8 @@ struct ClimateCommandRequest { static constexpr int id = 48;
 /* 7  */float target_temperature_low;
 /* 8  */bool has_target_temperature_high;
 /* 9  */float target_temperature_high;
-// 10 */bool unused_has_legacy_away;
-// 11 */bool unused_legacy_away;
+// 10 */bool unused_has_legacy_away;                    // deprecated in 1.5
+// 11 */bool unused_legacy_away;                        // deprecated in 1.5
 /* 12 */bool has_fan_mode;
 /* 13 */ClimateFanMode fan_mode;
 /* 14 */bool has_swing_mode;

@@ -32,8 +32,8 @@ namespace API {
 
 #define ESPHOME_API_COUNT           64
 #define ESPHOME_API_VERSION_MAJOR   1
-#define ESPHOME_API_VERSION_MINOR   14
-#define ESPHOME_VERSION             "2026.7.4"
+#define ESPHOME_API_VERSION_MINOR   15
+#define ESPHOME_VERSION             "2026.8.1"
 #define ESPHOME_BUFFER_SIZE         1024
 
 extern Message::Callback const API[ESPHOME_API_COUNT];
