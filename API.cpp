@@ -420,6 +420,7 @@ Message::Callback const API[ESPHOME_API_COUNT] =
                     break;
         }
     },
+#endif
     [SwitchCommandRequest::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct SwitchCommandRequest* payload = (struct SwitchCommandRequest*)data;
         switch (id) {
@@ -432,6 +433,7 @@ Message::Callback const API[ESPHOME_API_COUNT] =
         }
     },
     // ==================== TEXT SENSOR ====================
+#if HAVE_SOURCE_SERVER
     [ListEntitiesTextSensorResponse::id] = [](int fd, void* data, int type, int id, int integer, int upper, std::string_view string) {
         struct ListEntitiesTextSensorResponse* payload = (struct ListEntitiesTextSensorResponse*)data;
         switch (id) {
